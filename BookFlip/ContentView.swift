@@ -37,11 +37,17 @@ struct ContentView: View {
         Rectangle()
             .frame(width: size.width/2, height: size.height/2)
             .foregroundStyle(Color.blue)
+            .overlay {
+                Text("Left")
+            }
     }
     @ViewBuilder func RightView(size: CGSize) -> some View {
         Rectangle()
             .frame(width: size.width/2, height: size.height/2)
             .foregroundStyle(Color.red)
+            .overlay {
+                Text("Right")
+            }
     }
 }
 
@@ -73,6 +79,16 @@ struct OpenableBookFlipView<Front: View, InsideLeft: View, InsideRight: View>: V
     
                 front(size)
                     .frame(width: size.width/2, height: size.height/2)
+                    .allowsHitTesting(-rotation < 90)
+                    .overlay {
+                        if -rotation * 1.4 > 90 {
+                            insideLeft(size)
+                                .frame(width: size.width, height: size.height)
+                            //背面のViewなのでViewを反転
+                                .scaleEffect(x: -1)
+                                .transition(.identity)
+                        }
+                    }
                     .clipShape(
                         .rect(
                             topLeadingRadius: 0,
@@ -82,7 +98,7 @@ struct OpenableBookFlipView<Front: View, InsideLeft: View, InsideRight: View>: V
                         )
                     )
                     .rotation3DEffect(
-                        .init(degrees: rotation),
+                        .init(degrees: rotation * 1.4),
                         //回転する方向設定
                         axis: (x: 0, y: 1, z: 0),
                         //支点が左側になる
@@ -90,6 +106,8 @@ struct OpenableBookFlipView<Front: View, InsideLeft: View, InsideRight: View>: V
                         perspective: 0.3
                     )
             }
+            //Sliderを動かすと本が動くようにする
+            .offset(x: (config.width / 2) * progress)
         }
     }
     
